@@ -1,0 +1,117 @@
+asyncapi: '1.2.0'
+info:
+  title: Streetlights Kafka API
+  version: '1.0.0'
+
+topics:
+  "smartylighting.streetlights.1.0.event.{streetlightId}.lighting.measured":
+    parameters:
+      - $ref: '#/components/parameters/streetlightId'
+    publish:
+      $ref: '#/components/messages/lightMeasured'
+
+  "smartylighting.streetlights.1.0.action.{streetlightId}.turn.on":
+    parameters:
+      - $ref: '#/components/parameters/streetlightId'
+    subscribe:
+      $ref: '#/components/messages/turnOnOff'
+
+  "smartylighting.streetlights.1.0.action.{streetlightId}.turn.off":
+    parameters:
+      - $ref: '#/components/parameters/streetlightId'
+    subscribe:
+      $ref: '#/components/messages/turnOnOff'
+
+  "smartylighting.streetlights.1.0.action.{streetlightId}.dim":
+    parameters:
+      - $ref: '#/components/parameters/streetlightId'
+    subscribe:
+      $ref: '#/components/messages/dimLight'
+
+components:
+  messages:
+    lightMeasured:
+      summary: Inform about environmental lighting conditions of a particular streetlight.
+      headers:
+        type: object
+        properties:
+          my-app-header:
+            type: integer
+            minimum: 0
+            maximum: 100
+      payload:
+        $ref: '#/components/schemas/lightMeasuredPayload'
+
+    turnOnOff:
+      summary: Command a particular streetlight to turn the lights on or off.
+      headers:
+        type: object
+        properties:
+          my-app-header:
+            type: integer
+            minimum: 0
+            maximum: 100
+      payload:
+        $ref: '#/components/schemas/turnOnOffPayload'
+
+    dimLight:
+      summary: Command a particular streetlight to dim the lights.
+      headers:
+        type: object
+        properties:
+          my-app-header:
+            type: integer
+            minimum: 0
+            maximum: 100
+      payload:
+        $ref: '#/components/schemas/dimLightPayload'
+
+  schemas:
+    lightMeasuredPayload:
+      type: object
+      properties:
+        lumens:
+          type: integer
+          minimum: 0
+          description: Light intensity measured in lumens.
+        sentAt:
+          $ref: '#/components/schemas/sentAt'
+
+    turnOnOffPayload:
+      type: object
+      properties:
+        command:
+          type: string
+          enum:
+            - on
+            - off
+          description: Whether to turn on or off the light.
+        sentAt:
+          $ref: '#/components/schemas/sentAt'
+
+    dimLightPayload:
+      type: object
+      properties:
+        percentage:
+          type: integer
+          description: Percentage to which the light should be dimmed to.
+          minimum: 0
+          maximum: 100
+        sentAt:
+          $ref: '#/components/schemas/sentAt'
+
+    sentAt:
+      type: string
+      format: date-time
+      description: Date and time when the message was sent.
+
+  securitySchemes:
+    saslScram:
+      type: userPassword
+      description: Provide your username and password for SASL/SCRAM authentication
+
+  parameters:
+    streetlightId:
+      description: The ID of the streetlight.
+      schema:
+        type: string
